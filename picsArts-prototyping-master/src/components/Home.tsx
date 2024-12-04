@@ -40,7 +40,7 @@ const Home: React.FC<HomeScreenProps> = ({ navigation, route }) => {
       {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.headerText}>GenArt</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.toggleDrawer()} >
           <Text style={styles.iconText}>⚙️</Text>
         </TouchableOpacity>
       </View>

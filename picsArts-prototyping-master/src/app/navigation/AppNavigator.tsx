@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import SplashScreen from "@/src/components/SplashScreen";
 import SignUpScreen from "@/src/components/SignUpScreen";
 import WelcomeScreen from "@/src/components/WelcomeScreen";
@@ -10,12 +11,12 @@ import ThemeScreen from "@/src/components/ThemeScreen";
 import ComfartScreen from "@/src/components/ComfortScreens";
 import Home from "@/src/components/Home";
 import NavigationBar from "@/src/components/NavigationBar";
-import { View } from "react-native";
 import CreateMain from "@/src/components/CreateMain";
 import PasswordScreenIn from "@/src/components/PasswordSignIn";
 import SignInScreen from "@/src/components/SignInScreen";
 import ModelList from "@/src/components/ModelList";
 import ResultComponent from "@/src/components/ResultComponent";
+import { View, Text, TouchableOpacity } from "react-native";
 
 export type RootStackParamList = {
   SplashScreen: undefined;
@@ -36,6 +37,58 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const Drawer = createDrawerNavigator();
+
+function CustomDrawerContent({ navigation }: any) {
+  return (
+    <View style={{ flex: 1, padding: 20 }}>
+      <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+        <Text style={{ fontSize: 18, marginBottom: 20 }}>Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Theme")}>
+        <Text style={{ fontSize: 18, marginBottom: 20 }}>Theme</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Comfart")}>
+        <Text style={{ fontSize: 18, marginBottom: 20 }}>Comfort Settings</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function DrawerNavigator() {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Drawer.Screen
+        name="Home"
+        options={{ title: "Home" }}
+        component={HomeScreenWithNav}
+        
+      />
+      <Drawer.Screen name="Theme" options={{ title: "Choose Theme" }}>
+        {(props) => <ThemeScreen {...props} />}
+      </Drawer.Screen>
+      <Drawer.Screen
+        name="Comfart"
+        options={{ title: "Comfort Settings" }}
+        component={ComfartScreen}
+      />
+    </Drawer.Navigator>
+  );
+}
+
+function HomeScreenWithNav(props: any) {
+  return (
+    <View style={{ flex: 1 }}>
+      <Home {...props} />
+      <NavigationBar navigation={props.navigation} />
+    </View>
+  );
+}
 
 const AppNavigator = () => {
   const [theme, setTheme] = useState<string>("light");
@@ -91,32 +144,11 @@ const AppNavigator = () => {
       <Stack.Screen name="CreateMain" options={{ headerShown: false }}>
         {(props) => <CreateMain {...props} />}
       </Stack.Screen>
-      <Stack.Screen name="Theme" options={{ title: "Choose Theme" }}>
-        {(props) => <ThemeScreen {...props} onThemeSelect={setTheme} />}
-      </Stack.Screen>
-      <Stack.Screen name="Comfart" options={{ title: "Comfort Settings" }}>
-        {(props) => (
-          <ComfartScreen
-            {...props}
-            isComfortEnabled={isComfortEnabled}
-            onToggleComfort={setIsComfortEnabled}
-          />
-        )}
-      </Stack.Screen>
-      <Stack.Screen name="Home" options={{ headerShown: false }}>
-        {(props) => (
-          <View style={{ flex: 1 }}>
-            <Home {...props} />
-            <NavigationBar navigation={props.navigation} />
-          </View>
-        )}
-      </Stack.Screen>
-
-      {/* <Stack.Screen
-        name="ModelList"
-        component={ModelList}
+      <Stack.Screen
+        name="Home"
+        component={DrawerNavigator}
         options={{ headerShown: false }}
-      /> */}
+      />
     </Stack.Navigator>
   );
 };

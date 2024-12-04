@@ -23,7 +23,7 @@ app.post("/fine-tune", upload.array("image"), async (req, res) => {
       uploadOnCloudinary(file.path)
     );
     const uploadedImages = await Promise.all(uploadPromises);
-
+    
     const imageUrls = uploadedImages.map((upload) => upload.secure_url);
 
     const fluxApiUrl = "fal-ai/flux-lora-fast-training";
@@ -64,26 +64,26 @@ app.post("/prompting", async (req, res) => {
 
     const { data } = req.body;
     // console.log(data, "hhhh");
-    // const result = await fal.run("fal-ai/flux/dev", {
-    //   input: {
-    //     prompt: data,
-    //     seed: 6252023,
-    //     image_size: "landscape_4_3",
-    //     num_images: 1,
-    //   },
-    // });
-    // console.log(result.data.images);
-    // const uploadPromises = result.data.images.map((file) =>
-    //   uploadOnCloudinary(file.url)
-    // );
-    // const imageUrls = await Promise.all(uploadPromises);
-    // console.log(imageUrls, "imageUrls");
-
-    const imageUrls = [
-      {
-        url: "https://res.cloudinary.com/dqmzbj8kt/image/upload/v1732552282/fvwzWjRveUApgvJlpBtOF_txwxp3.png",
+    const result = await fal.run("fal-ai/flux/dev", {
+      input: {
+        prompt: data,
+        seed: 6252023,
+        image_size: "landscape_4_3",
+        num_images: 1,
       },
-    ];
+    });
+    console.log(result.data.images);
+    const uploadPromises = result.data.images.map((file) =>
+      uploadOnCloudinary(file.url)
+    );
+    const imageUrls = await Promise.all(uploadPromises);
+    console.log(imageUrls, "imageUrls");
+
+    // const imageUrls = [
+    //   {
+    //     url: "https://res.cloudinary.com/dqmzbj8kt/image/upload/v1732552282/fvwzWjRveUApgvJlpBtOF_txwxp3.png",
+    //   },
+    // ];
     res.status(200).json({
       message: "Images uploaded and fine-tuning request sent successfully",
       fluxResponse: imageUrls,
