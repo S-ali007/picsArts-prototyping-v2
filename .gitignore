@@ -21,5 +21,8 @@ expo-env.d.ts
 # @end expo-cli
 .env
 firebaseConfig.js
+picsArts-prototyping-master/firebaseConfig.js
+back-end/.env
+picsArts-prototyping-master/.env
 *.env
 
