@@ -16,8 +16,10 @@ import PasswordScreenIn from "@/src/components/PasswordSignIn";
 import SignInScreen from "@/src/components/SignInScreen";
 import ModelList from "@/src/components/ModelList";
 import ResultComponent from "@/src/components/ResultComponent";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Button } from "react-native";
 
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebaseConfig";
 export type RootStackParamList = {
   SplashScreen: undefined;
   SignUpScreen: undefined;
@@ -38,19 +40,63 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
+const data = [
+  {
+    name: "Profile",
+    navigation: "Home",
+  },
+  {
+    name: "Theme",
+    navigation: "Theme",
+  },
+  {
+    name: "Comfort Settings",
+    navigation: "Comfart",
+  },
+];
+const signOutUser = async ({ navigation }: any) => {
+  signOut(auth)
+    .then(() => {
+      navigation.navigate("SignInScreen");
+    })
+    .catch((error) => {
+      console.log("error", error);
+    });
+};
 
 function CustomDrawerContent({ navigation }: any) {
+  const [selectedTab, setSelectedTab] = React.useState("Home");
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-        <Text style={{ fontSize: 18, marginBottom: 20 }}>Profile</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("Theme")}>
-        <Text style={{ fontSize: 18, marginBottom: 20 }}>Theme</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("Comfart")}>
-        <Text style={{ fontSize: 18, marginBottom: 20 }}>Comfort Settings</Text>
-      </TouchableOpacity>
+   
+    <View style={{ flex: 1, padding: 20, justifyContent: "space-between" }}>
+      <View>
+        {data.map((item, id) => {
+          const handleTabSelect = (tab: string) => {
+            setSelectedTab(tab);
+            navigation.navigate(item.navigation);
+          };
+          return (
+            <View key={id}>
+              <TouchableOpacity onPress={() => handleTabSelect(item.name)}>
+                <Text
+                  style={[
+                    { fontSize: 18, marginBottom: 20 },
+                    selectedTab === item.name && {
+                      color: "#7B1FA2",
+                      fontWeight: "bold",
+                      borderBottomWidth: 2,
+                      borderBottomColor: "#7B1FA2",
+                    },
+                  ]}
+                >
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+      </View>
+      <Button title="Logout" onPress={signOutUser} />
     </View>
   );
 }
@@ -93,6 +139,7 @@ function HomeScreenWithNav(props: any) {
 const AppNavigator = () => {
   const [theme, setTheme] = useState<string>("light");
   const [isComfortEnabled, setIsComfortEnabled] = useState<boolean>(false);
+  const [selectedTab, setSelectedTab] = React.useState("Training Model");
 
   return (
     <Stack.Navigator initialRouteName="SplashScreen">
