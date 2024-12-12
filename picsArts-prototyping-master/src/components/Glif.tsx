@@ -53,12 +53,12 @@ const Glif: React.FC = () => {
             setLoading(true);
             setResult(null);
             try {
-              const response = await api.post("/prompting", {
+              const response = await api.post("/api/v1/prompting", {
                 data: customPrompt,
               });
 
               const { fluxResponse, timings } = response.data;
-              const images = fluxResponse
+              const images = fluxResponse;
               // Navigate to the ResultComponent screen with parameters
               navigation.navigate("ResultComponent", {
                 images,

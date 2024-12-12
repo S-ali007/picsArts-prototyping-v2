@@ -32,17 +32,17 @@ type Props = {
   route: ResultComponentRouteProp;
 };
 
-// const images = [
-//   {
-//     url: "https://res.cloudinary.com/dqmzbj8kt/image/upload/v1732552282/fvwzWjRveUApgvJlpBtOF_txwxp3.png",
-//   },
-// ];
+const images = [
+  {
+    url: "https://res.cloudinary.com/dqmzbj8kt/image/upload/v1732552282/fvwzWjRveUApgvJlpBtOF_txwxp3.png",
+  },
+];
 
 const prompt = "game";
 
 const ResultComponent: React.FC<Props> = ({ route }) => {
-  const { images = [], prompt } = route.params;
-  console.log(images, "images");
+  // const { images = [], prompt } = route.params;
+  // console.log(images, "images");
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Result for Prompt: "{prompt}"</Text>

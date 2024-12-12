@@ -18,6 +18,7 @@ import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/n
 import { RootStackParamList } from "../app/navigation/AppNavigator";
 import ImageSelector from "./ImageSelector";
 import Glif from "./Glif";
+import RemoveBackground from "./RemoveBackground";
 // import GestureScreen from "./GestureScreen";
 
 interface CreateScreenProps {
@@ -32,6 +33,7 @@ const CreateMain: React.FC<CreateScreenProps> = ({ navigation }) => {
   };
 
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [tool, setTool] = useState("");
 
   const handlePermissionRequest = async (): Promise<boolean> => {
     if (Platform.OS !== "web") {
@@ -74,7 +76,11 @@ const CreateMain: React.FC<CreateScreenProps> = ({ navigation }) => {
       console.log("Error picking image:", error);
     }
   };
-
+  const handleToolClick = (tool: string) => {
+    if (tool === "Remove background") {
+      return setTool(tool);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -105,55 +111,66 @@ const CreateMain: React.FC<CreateScreenProps> = ({ navigation }) => {
 
       {selectedTab === "Photos" && (
         <>
-          {/* Permission Request */}
-          {selectedTab === "Photos" && (
-            <View style={styles.permissionRequest}>
-              <Button title="Pick an image from storage" onPress={pickImage} />
-              {imageUri && (
-                <Image
-                  source={{ uri: imageUri }}
-                  style={{ width: 400, height: 400, marginTop: 20 }}
-                />
-              )}
+          {tool === "Remove background" ? (
+            <View>
+              <RemoveBackground />
             </View>
-          )}
-
-          {/* Tools */}
-          <View style={styles.toolsContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {tools.map((tool, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.toolItem}
-                  // onPress={() => handleToolClick(tool.name)}
-                >
-                  <Image
-                    source={{ uri: tool.image }}
-                    style={styles.toolImage}
+          ) : (
+            <>
+              {/* Permission Request */}
+              {selectedTab === "Photos" && (
+                <View style={styles.permissionRequest}>
+                  <Button
+                    title="Pick an image from storage"
+                    onPress={pickImage}
                   />
-                  <Text style={styles.toolText}>{tool.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
+                  {imageUri && (
+                    <Image
+                      source={{ uri: imageUri }}
+                      style={{ width: 400, height: 400, marginTop: 20 }}
+                    />
+                  )}
+                </View>
+              )}
 
-          {/* AI Tools Section */}
-          <Text style={styles.sectionTitle}>AI Tools</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.aiTools}
-          >
-            {aiTools.map((tool, index) => (
-              <View key={index} style={styles.aiToolItem}>
-                <Image
-                  source={{ uri: tool.image }}
-                  style={styles.aiToolImage}
-                />
-                <Text style={styles.toolText}>{tool.name}</Text>
+              {/* Tools */}
+              <View style={styles.toolsContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {tools.map((tool, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.toolItem}
+                      onPress={() => handleToolClick(tool.name)}
+                    >
+                      <Image
+                        source={{ uri: tool.image }}
+                        style={styles.toolImage}
+                      />
+                      <Text style={styles.toolText}>{tool.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
-            ))}
-          </ScrollView>
+
+              {/* AI Tools Section */}
+              <Text style={styles.sectionTitle}>AI Tools</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.aiTools}
+              >
+                {aiTools.map((tool, index) => (
+                  <View key={index} style={styles.aiToolItem}>
+                    <Image
+                      source={{ uri: tool.image }}
+                      style={styles.aiToolImage}
+                    />
+                    <Text style={styles.toolText}>{tool.name}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </>
+          )}
         </>
       )}
 
