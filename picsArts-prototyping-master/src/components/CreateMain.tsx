@@ -11,6 +11,8 @@ import {
   Platform,
   Button,
   Linking,
+  ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
@@ -19,11 +21,13 @@ import { RootStackParamList } from "../app/navigation/AppNavigator";
 import ImageSelector from "./ImageSelector";
 import Glif from "./Glif";
 import RemoveBackground from "./RemoveBackground";
+import api from "../api";
 // import GestureScreen from "./GestureScreen";
 
 interface CreateScreenProps {
   navigation: NativeStackNavigationProp<RootStackParamList, "CreateMain">;
 }
+const { width, height } = Dimensions.get("window");
 
 const CreateMain: React.FC<CreateScreenProps> = ({ navigation }) => {
   const [selectedTab, setSelectedTab] = useState("Training Model");
@@ -34,6 +38,8 @@ const CreateMain: React.FC<CreateScreenProps> = ({ navigation }) => {
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [tool, setTool] = useState("");
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handlePermissionRequest = async (): Promise<boolean> => {
     if (Platform.OS !== "web") {
@@ -76,9 +82,44 @@ const CreateMain: React.FC<CreateScreenProps> = ({ navigation }) => {
       console.log("Error picking image:", error);
     }
   };
-  const handleToolClick = (tool: string) => {
+  const handleToolClick = async (tool: string) => {
     if (tool === "Remove background") {
-      return setTool(tool);
+      if (!imageUri) {
+        Alert.alert("No Image Selected", "Please select an image to proceed.");
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append("image", {
+          uri: imageUri,
+          name: "selected_image.jpg",
+          type: "image/jpeg",
+        });
+
+        const response = await api.post("/api/v1/removeBackground", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        setProcessedImage(response.data.imageUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+
+        if (error.response) {
+          Alert.alert(
+            "Error",
+            error.response.data.message || "An error occurred on the server."
+          );
+        } else {
+          Alert.alert("Error", "Something went wrong. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
   return (
@@ -111,47 +152,53 @@ const CreateMain: React.FC<CreateScreenProps> = ({ navigation }) => {
 
       {selectedTab === "Photos" && (
         <>
-          {tool === "Remove background" ? (
-            <View>
-              <RemoveBackground />
-            </View>
-          ) : (
-            <>
-              {/* Permission Request */}
-              {selectedTab === "Photos" && (
-                <View style={styles.permissionRequest}>
-                  <Button
-                    title="Pick an image from storage"
-                    onPress={pickImage}
-                  />
-                  {imageUri && (
-                    <Image
-                      source={{ uri: imageUri }}
-                      style={{ width: 400, height: 400, marginTop: 20 }}
-                    />
-                  )}
-                </View>
+          {/* Permission Request */}
+          {selectedTab === "Photos" && (
+            <View style={styles.permissionRequest}>
+              {!imageUri && !processedImage && (
+                <Button
+                  title="Pick an image from storage"
+                  onPress={pickImage}
+                />
               )}
+              {imageUri && !processedImage && (
+                <Image
+                  source={{ uri: imageUri }}
+                  style={{ width: 300, height: 300 }}
+                />
+              )}
+              {imageUri && processedImage && (
+                <Image
+                  source={{ uri: processedImage }}
+                  style={{ width: 300, height: 300 }}
+                />
+              )}
+              {isLoading && <ActivityIndicator size="large" color="#FF00FF" />}
+            </View>
+          )}
 
-              {/* Tools */}
-              <View style={styles.toolsContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {tools.map((tool, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.toolItem}
-                      onPress={() => handleToolClick(tool.name)}
-                    >
-                      <Image
-                        source={{ uri: tool.image }}
-                        style={styles.toolImage}
-                      />
-                      <Text style={styles.toolText}>{tool.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
+          {/* Tools */}
+          <View style={styles.toolsContainer}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {tools.map((tool, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.toolItem}
+                  onPress={() => handleToolClick(tool.name)}
+                  // onPress={handleRemoveBackground}
+                >
+                  <Image
+                    source={{ uri: tool.image }}
+                    style={styles.toolImage}
+                  />
+                  <Text style={styles.toolText}>{tool.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
+          {!processedImage && (
+            <>
               {/* AI Tools Section */}
               <Text style={styles.sectionTitle}>AI Tools</Text>
               <ScrollView
@@ -242,7 +289,9 @@ const aiTools = [
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
+    width,
+    height,
     backgroundColor: "#FFFFFF",
   },
   header: {
@@ -340,12 +389,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   aiTools: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 6,
     paddingVertical: 10,
   },
   aiToolItem: {
-    width: 100,
-    height: 100,
+    width: 400,
+    height: 200,
     borderRadius: 5,
     marginRight: 10,
   },
